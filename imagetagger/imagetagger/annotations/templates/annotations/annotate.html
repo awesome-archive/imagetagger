@@ -87,7 +87,7 @@
             <div id="image_list">
                 {% for set_image in set_images %}
                   <a id="annotate_image_link_{{ set_image.id }}"
-                     href="{% url 'annotations:annotate' set_image.id %}{% if filtered is not None %}?selected_annotation_type={{ filtered }}{% endif %}"
+                     href="{% url 'annotations:annotate' set_image.id %}"
                      class="annotate_image_link {% if set_image.id == selected_image.id %}active{% endif %}"
                      data-imageid="{{ set_image.id }}">
                     {{set_image.name}}
@@ -115,35 +115,8 @@
               <u>Annotations:</u>
             </p>
             <div id="existing_annotations">
-              {% for annotation in image_annotations %}
-                <div id="annotation_{{ annotation.id }}" class="annotation">
-                  {{ annotation.annotation_type.name }}:
-                  <div style="float: right;">
-                      <a href="{% url 'annotations:verify' annotation.id%}">
-                        <img src="{% static "symbols/checkmark.png" %}" alt="verify" class="annotation_verify_button" data-annotationid="{{ annotation.id }}">
-                      </a>
-                      <a href="#" class="annotation_edit_button" id="annotation_edit_button_{{ annotation.id }}" data-annotationid="{{ annotation.id }}" data-annotationtypeid="{{ annotation.annotation_type_id }}" data-escapedvector="{{ annotation.vector_as_json }}">
-                        <img src="{% static "symbols/pencil.png" %}" alt="edit">
-                      </a>
-                      <a href="{% url 'annotations:delete_annotation' annotation.id%}" class="annotation_delete_button" data-annotationid="{{ annotation.id }}">
-                        <img src="{% static "symbols/bin.png" %}" alt="delete">
-                      </a>
-                  </div>
-                  <br>
-                  {% if annotation.vector is not None %}
-                    {% for key, value in annotation.vector.items %}
-                      {% if forloop.counter0 > 0 %}
-                        &bull;
-                      {% endif %}
-                      <em>{{ key }}</em>: {{ value }}
-                    {% endfor %}
-                  {% else %}
-                    {{annotation.content}}
-                  {% endif %}
-                </div>
-              {% endfor %}
             </div>
-            <div id="no_annotations" class="alert alert-warning{% if image_annotations %} hidden{% endif %}">{% trans 'No annotations found.' %}</div>
+            <div id="no_annotations" class="alert alert-warning hidden">{% trans 'No annotations found.' %}</div>
             <div id="annotations_loading" class="alert alert-info hidden">{% trans 'Loading ...' %}</div>
         </div>
         <div class="col-md-3">
@@ -152,7 +125,7 @@
                     <h3 id="active_image_name" class="panel-title">{{selected_image.name}}</h3>
                 </div>
                 <div class="panel-body">
-                    <form id="annotation_form" action="{% url 'annotations:annotate' selected_image.id %}{% if filtered is not None %}?selected_annotation_type={{ filtered }}{% endif %}" enctype="multipart/form-data" method="post">
+                    <form id="annotation_form" action="{% url 'annotations:annotate' selected_image.id %}" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="image_id" value="{{ selected_image.id }}">
                         <p>
@@ -184,21 +157,6 @@
                             </p>
                         <p data-toggle="tooltip" data-placement="right" title="Same layout as the arrow keys. Increasing the bounding box size is possible with shift+i/l . Decreasing is possible with shift+j/k .">The bounding box can be moved<b> and resized</b> with <b>i j k l</b> <span class="glyphicon glyphicon-question-sign"></span></p>
                             <div class="row" id="coordinate_table">
-                              {% for field in vector_fields %}
-                                <div id="{{ field }}Box">
-                                  <div class="col-xs-2" style="max-width: 3em">
-                                    <label for="{{ field }}Field">
-                                        {{ field }}
-                                    </label>
-                                  </div>
-                                  <div class="col-xs-10">
-                                      <input id="{{ field }}Field"
-                                             class="Coordinates annotation_value form-control"
-                                             type="text" name="{{ field }}Field" value="0" min="0" disabled>
-                                  </div>
-                                  <div class="col-xs-12"></div>
-                                </div>
-                              {% endfor %}
                             </div>
                         {% endif %}
                         <br>
@@ -252,7 +210,7 @@
                               </div>
                             {% endif %}
                             {% if 'delete_images' in imageset_perms and not imageset_lock %}
-                            <div class="col-sm-12"><p>{{ imageset.image_lock }}</p></div>
+                            <div class="col-sm-12"><p></p></div>
                             <div class="col-md-12">
                                 <button type="button" class="btn btn-danger" id="delete-button" data-toggle="modal" data-target="#deleteModal" style="width: 100%">
                                     <span class="glyphicon glyphicon-trash" aria-hidden="true" style="padding-right: 3px;"></span>Remove image from imageset

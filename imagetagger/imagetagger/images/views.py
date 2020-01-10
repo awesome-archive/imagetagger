@@ -98,7 +98,7 @@ def index(request):
     annotation_types = Annotation.objects.values('annotation_type').annotate(
         annotation_count=Count('pk'),
         public_annotation_count=Count('pk', filter=Q(image__image_set__public=True)),
-        name=F('annotation_type__name'))
+        name=F('annotation_type__name')).order_by('-public_annotation_count')
 
     image_stats = Image.objects.aggregate(
         total_count=Count('pk'),
@@ -189,8 +189,9 @@ def upload_image(request, imageset_id):
                 'unsupported': False,
                 'zip': False,
             }
-            fname = f.name.split('.')
-            if fname[-1] == 'zip':
+            magic_number = f.read(4)
+            f.seek(0)  # reset file cursor to the beginning of the file
+            if magic_number == b'PK\x03\x04':  # ZIP file magic number
                 error['zip'] = True
                 zipname = ''.join(random.choice(string.ascii_uppercase +
                                                 string.ascii_lowercase +
@@ -267,6 +268,7 @@ def upload_image(request, imageset_id):
                 # tests for duplicats in  imageset
                 if Image.objects.filter(checksum=fchecksum, image_set=imageset)\
                         .count() == 0:
+                    fname = f.name.split('.')
                     fname = ('_'.join(fname[:-1]) + '_' +
                              ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
                                      for _ in range(6)) + '.' + fname[-1])
